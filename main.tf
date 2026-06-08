@@ -139,7 +139,9 @@ data "aws_ami" "amazon_linux" {
 }
 
 ##追記　EC2作成
-resource "aws_instance" "web_a" {
+module "web_a" {
+
+  source = "./modules/ec2"
 
   ami = data.aws_ami.amazon_linux.id
 
@@ -147,45 +149,36 @@ resource "aws_instance" "web_a" {
 
   subnet_id = module.public_subnet_a.subnet_id
 
-  vpc_security_group_ids = [
-    module.web_security_group.sg_id
-  ]
+  sg_id = module.web_security_group.sg_id
 
-
-  user_data_replace_on_change = true
+  instance_name = "terraform-study-v2-ec2-a"
 
   user_data = <<-EOF
 #!/bin/bash
-
 dnf update -y
-
 dnf install nginx -y
-
 systemctl enable nginx
-
 systemctl start nginx
-
 echo "<h1>Server A</h1>" > /usr/share/nginx/html/index.html
-
 EOF
-
-  tags = {
-    Name = "terraform-study-v2-ec2-a"
-  }
 }
+
+
 
 #ターゲットグループ紐づけ
 resource "aws_lb_target_group_attachment" "web_a" {
 
   target_group_arn = aws_lb_target_group.main.arn
 
-  target_id = aws_instance.web_a.id
+  target_id = module.web_a.instance_id
 
   port = 80
 }
 
 
-resource "aws_instance" "web_c" {
+module "web_c" {
+
+  source = "./modules/ec2"
 
   ami = data.aws_ami.amazon_linux.id
 
@@ -193,30 +186,18 @@ resource "aws_instance" "web_c" {
 
   subnet_id = module.public_subnet_c.subnet_id
 
-  vpc_security_group_ids = [
-    module.web_security_group.sg_id
-  ]
+  sg_id = module.web_security_group.sg_id
 
-  user_data_replace_on_change = true
+  instance_name = "terraform-study-v2-ec2-c"
 
   user_data = <<-EOF
 #!/bin/bash
-
 dnf update -y
-
 dnf install nginx -y
-
 systemctl enable nginx
-
 systemctl start nginx
-
 echo "<h1>Server C</h1>" > /usr/share/nginx/html/index.html
-
 EOF
-
-  tags = {
-    Name = "terraform-study-v2-ec2-c"
-  }
 }
 
 #ターゲットグループ紐づけ
@@ -224,7 +205,7 @@ resource "aws_lb_target_group_attachment" "web_c" {
 
   target_group_arn = aws_lb_target_group.main.arn
 
-  target_id = aws_instance.web_c.id
+  target_id = module.web_c.instance_id
 
   port = 80
 }
