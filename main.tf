@@ -15,23 +15,19 @@ provider "aws" {
   region = "ap-northeast-1"
 }
 
-resource "aws_vpc" "main" {
+module "vpc" {
 
-  cidr_block = "10.0.0.0/16"
+  source = "./modules/vpc"
 
-  enable_dns_hostnames = true
+  vpc_cidr = "10.0.0.0/16"
 
-  enable_dns_support = true
-
-  tags = {
-    Name = "terraform-study-v2-vpc"
-  }
+  vpc_name = "terraform-study-v3-vpc"
 }
 
 ##追記　パブリックサブネット
 resource "aws_subnet" "public_a" {
 
-  vpc_id = aws_vpc.main.id
+  vpc_id = module.vpc.vpc_id
 
   cidr_block = "10.0.1.0/24"
 
@@ -46,7 +42,7 @@ resource "aws_subnet" "public_a" {
 
 resource "aws_subnet" "public_c" {
 
-  vpc_id = aws_vpc.main.id
+  vpc_id = module.vpc.vpc_id
 
   cidr_block = "10.0.2.0/24"
 
@@ -62,7 +58,7 @@ resource "aws_subnet" "public_c" {
 ##追記 IGW
 resource "aws_internet_gateway" "main" {
 
-  vpc_id = aws_vpc.main.id
+  vpc_id = module.vpc.vpc_id
 
   tags = {
     Name = "terraform-study-v2-igw"
@@ -72,7 +68,7 @@ resource "aws_internet_gateway" "main" {
 ##追記　ルートテーブル
 resource "aws_route_table" "public" {
 
-  vpc_id = aws_vpc.main.id
+  vpc_id = module.vpc.vpc_id
 
   route {
 
@@ -109,7 +105,7 @@ resource "aws_security_group" "web" {
 
   description = "Security Group for EC2"
 
-  vpc_id = aws_vpc.main.id
+  vpc_id = module.vpc.vpc_id
 
   ingress {
 
@@ -160,7 +156,7 @@ resource "aws_security_group" "alb" {
 
   description = "ALB Security Group"
 
-  vpc_id = aws_vpc.main.id
+  vpc_id = module.vpc.vpc_id
 
   ingress {
 
@@ -326,7 +322,7 @@ resource "aws_lb_target_group" "main" {
 
   protocol = "HTTP"
 
-  vpc_id = aws_vpc.main.id
+  vpc_id = module.vpc.vpc_id
 
   health_check {
 
