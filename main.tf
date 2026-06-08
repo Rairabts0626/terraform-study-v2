@@ -25,34 +25,30 @@ module "vpc" {
 }
 
 ##追記　パブリックサブネット
-resource "aws_subnet" "public_a" {
+module "public_subnet_a" {
+
+  source = "./modules/subnet"
 
   vpc_id = module.vpc.vpc_id
 
-  cidr_block = "10.0.1.0/24"
+  subnet_cidr = "10.0.1.0/24"
 
-  availability_zone = "ap-northeast-1a"
+  az = "ap-northeast-1a"
 
-  map_public_ip_on_launch = true
-
-  tags = {
-    Name = "public-a"
-  }
+  subnet_name = "public-a"
 }
 
-resource "aws_subnet" "public_c" {
+module "public_subnet_c" {
+
+  source = "./modules/subnet"
 
   vpc_id = module.vpc.vpc_id
 
-  cidr_block = "10.0.2.0/24"
+  subnet_cidr = "10.0.2.0/24"
 
-  availability_zone = "ap-northeast-1c"
+  az = "ap-northeast-1c"
 
-  map_public_ip_on_launch = true
-
-  tags = {
-    Name = "public-c"
-  }
+  subnet_name = "public-c"
 }
 
 ##追記 IGW
@@ -85,14 +81,14 @@ resource "aws_route_table" "public" {
 ##ルートテーブルへ紐づけ
 resource "aws_route_table_association" "public_a" {
 
-  subnet_id = aws_subnet.public_a.id
+  subnet_id = module.public_subnet_a.subnet_id
 
   route_table_id = aws_route_table.public.id
 }
 
 resource "aws_route_table_association" "public_c" {
 
-  subnet_id = aws_subnet.public_c.id
+  subnet_id = module.public_subnet_c.subnet_id
 
   route_table_id = aws_route_table.public.id
 }
@@ -206,7 +202,7 @@ resource "aws_instance" "web_a" {
 
   instance_type = "t3.micro"
 
-  subnet_id = aws_subnet.public_a.id
+  subnet_id = module.public_subnet_a.subnet_id
 
   vpc_security_group_ids = [
     aws_security_group.web.id
@@ -252,7 +248,7 @@ resource "aws_instance" "web_c" {
 
   instance_type = "t3.micro"
 
-  subnet_id = aws_subnet.public_c.id
+  subnet_id = module.public_subnet_c.subnet_id
 
   vpc_security_group_ids = [
     aws_security_group.web.id
@@ -304,8 +300,8 @@ resource "aws_lb" "main" {
   ]
 
   subnets = [
-    aws_subnet.public_a.id,
-    aws_subnet.public_c.id
+    module.public_subnet_a.subnet_id,
+    module.public_subnet_c.subnet_id
   ]
 
   tags = {
