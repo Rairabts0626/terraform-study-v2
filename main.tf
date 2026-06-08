@@ -95,92 +95,35 @@ resource "aws_route_table_association" "public_c" {
 
 
 ##追記　セキュリティグループ
-resource "aws_security_group" "web" {
+module "web_security_group" {
 
-  name = "terraform-study-v2-sg"
+  source = "./modules/security_group"
+
+  vpc_id = module.vpc.vpc_id
+
+  sg_name = "terraform-study-v2-sg"
 
   description = "Security Group for EC2"
 
-  vpc_id = module.vpc.vpc_id
+  ingress_ports = [22, 80]
 
-  ingress {
-
-    description = "SSH"
-
-    from_port = 22
-
-    to_port = 22
-
-    protocol = "tcp"
-
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-
-    description = "HTTP"
-
-    from_port = 80
-
-    to_port = 80
-
-    protocol = "tcp"
-
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-
-    from_port = 0
-
-    to_port = 0
-
-    protocol = "-1"
-
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "terraform-study-v2-sg"
-  }
 }
 
-##ALB用　セキュリティグループ
-resource "aws_security_group" "alb" {
 
-  name = "terraform-study-v2-alb-sg"
+
+##ALB用　セキュリティグループ
+module "alb_security_group" {
+
+  source = "./modules/security_group"
+
+  vpc_id = module.vpc.vpc_id
+
+  sg_name = "terraform-study-v2-alb-sg"
 
   description = "ALB Security Group"
 
-  vpc_id = module.vpc.vpc_id
-
-  ingress {
-
-    from_port = 80
-
-    to_port = 80
-
-    protocol = "tcp"
-
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-
-    from_port = 0
-
-    to_port = 0
-
-    protocol = "-1"
-
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "terraform-study-v2-alb-sg"
-  }
+  ingress_ports = [80]
 }
-
 
 ##AMI
 data "aws_ami" "amazon_linux" {
@@ -205,7 +148,7 @@ resource "aws_instance" "web_a" {
   subnet_id = module.public_subnet_a.subnet_id
 
   vpc_security_group_ids = [
-    aws_security_group.web.id
+    module.web_security_group.sg_id
   ]
 
 
@@ -251,7 +194,7 @@ resource "aws_instance" "web_c" {
   subnet_id = module.public_subnet_c.subnet_id
 
   vpc_security_group_ids = [
-    aws_security_group.web.id
+    module.web_security_group.sg_id
   ]
 
   user_data_replace_on_change = true
@@ -296,7 +239,7 @@ resource "aws_lb" "main" {
   load_balancer_type = "application"
 
   security_groups = [
-    aws_security_group.alb.id
+    module.alb_security_group.sg_id
   ]
 
   subnets = [
@@ -353,4 +296,6 @@ resource "aws_lb_listener" "http" {
   }
 }
 
-
+#output "sg_id" {
+#  value = aws_security_group.this.id
+#}
