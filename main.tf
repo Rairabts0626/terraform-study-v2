@@ -15,6 +15,12 @@ provider "aws" {
   region = "ap-northeast-1"
 }
 
+locals {
+
+  amazon_linux_ami = "ami-04d11c012a67b33a4"
+}
+
+
 module "vpc" {
 
   source = "./modules/vpc"
@@ -126,24 +132,24 @@ module "alb_security_group" {
 }
 
 ##AMI
-data "aws_ami" "amazon_linux" {
-
-  most_recent = true
-
-  owners = ["amazon"]
-
-  filter {
-    name   = "name"
-    values = ["al2023-ami-*"]
-  }
-}
+#data "aws_ami" "amazon_linux" {
+#
+#  most_recent = true
+#
+#  owners = ["amazon"]
+#
+#  filter {
+#    name   = "name"
+#    values = ["al2023-ami-*"]
+#  }
+#}
 
 ##追記　EC2作成
 module "web_a" {
 
   source = "./modules/ec2"
 
-  ami = data.aws_ami.amazon_linux.id
+  ami = local.amazon_linux_ami
 
   instance_type = "t3.micro"
 
@@ -172,7 +178,7 @@ module "web_c" {
 
   source = "./modules/ec2"
 
-  ami = data.aws_ami.amazon_linux.id
+  ami = local.amazon_linux_ami
 
   instance_type = "t3.micro"
 
