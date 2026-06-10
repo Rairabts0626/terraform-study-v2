@@ -276,6 +276,30 @@ module "autoscaling_policy" {
   asg_name = module.autoscaling.asg_name
 }
 
+##追記　SNS
+module "sns" {
+
+  source = "./modules/sns"
+
+  topic_name = "terraform-study-v2-alert"
+
+  email_address = "ilovehop0626@gmail.com"
+}
+
+## 追記 Cloudwatch
+module "cloudwatch_alarm" {
+
+  source = "./modules/cloudwatch_alarm"
+
+  alarm_name = "terraform-study-v2-cpu-high"
+
+  asg_name = module.autoscaling.asg_name
+
+  topic_arn = module.sns.topic_arn
+}
+
+
+
 #output "sg_id" {
 #  value = aws_security_group.this.id
 #}
