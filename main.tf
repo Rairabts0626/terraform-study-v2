@@ -224,9 +224,57 @@ module "alb" {
   instance_c_id = module.web_c.instance_id
 }
 
-##追記　ターゲットグループ
+##追記　ランチテンプレート
+module "launch_template" {
 
-##追記　ALBリスナー
+  source = "./modules/launch_template"
+
+  template_name = "terraform-study-v2"
+
+  ami = local.amazon_linux_ami
+
+  instance_type = "t3.micro"
+
+  sg_id = module.web_security_group.sg_id
+
+  instance_name = "terraform-study-v2-asg"
+
+  user_data = <<-EOF
+#!/bin/bash
+dnf update -y
+dnf install nginx -y
+systemctl enable nginx
+systemctl start nginx
+echo "<h1>AutoScaling Server</h1>" > /usr/share/nginx/html/index.html
+EOF
+}
+
+##追記　ASG
+module "autoscaling" {
+
+  source = "./modules/autoscaling"
+
+  asg_name = "terraform-study-v2-asg"
+
+  launch_template_id = module.launch_template.launch_template_id
+
+  subnet_ids = [
+    module.public_subnet_a.subnet_id,
+    module.public_subnet_c.subnet_id
+  ]
+
+  target_group_arn = module.alb.target_group_arn
+}
+
+##追記　ASG　ポリシー
+module "autoscaling_policy" {
+
+  source = "./modules/autoscaling_policy"
+
+  policy_name = "terraform-study-v2-cpu-policy"
+
+  asg_name = module.autoscaling.asg_name
+}
 
 #output "sg_id" {
 #  value = aws_security_group.this.id
