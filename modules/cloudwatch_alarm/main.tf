@@ -16,7 +16,7 @@ resource "aws_cloudwatch_metric_alarm" "cpu_high" {
 
   threshold = 70
 
-  alarm_description = "CPU High"
+  alarm_description = "CPU High Test"
 
   alarm_actions = [
     var.topic_arn
