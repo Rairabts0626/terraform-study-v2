@@ -6,7 +6,7 @@ resource "aws_subnet" "this" {
 
   availability_zone = var.az
 
-  map_public_ip_on_launch = true
+  map_public_ip_on_launch = var.public_ip
 
   tags = {
     Name = var.subnet_name
