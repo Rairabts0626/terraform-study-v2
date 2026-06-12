@@ -7,7 +7,7 @@ variable "nat_enabled" {
 
 variable "db_password" {
 
-  type      = string
+  type = string
 
   sensitive = true
 }
