@@ -17,7 +17,7 @@ provider "aws" {
 
 locals {
 
-  amazon_linux_ami = "ami-04d11c012a67b33a4"
+  wordpress_ami = "ami-08a61904741c13ec7"
 }
 
 
@@ -385,7 +385,7 @@ module "launch_template" {
 
   template_name = "terraform-study-v2"
 
-  ami = local.amazon_linux_ami
+  ami = local.wordpress_ami
 
   instance_type = "t3.micro"
 
@@ -393,39 +393,7 @@ module "launch_template" {
 
   instance_name = "terraform-study-v2-asg"
 
-  user_data = <<-EOF
-#!/bin/bash
-
-dnf update -y
-
-dnf install httpd php php-mysqlnd wget tar -y
-
-systemctl enable httpd
-systemctl start httpd
-
-cd /tmp
-
-wget https://wordpress.org/latest.tar.gz
-
-tar -xzf latest.tar.gz
-
-cp -r wordpress/* /var/www/html/
-
-cd /var/www/html
-
-cp wp-config-sample.php wp-config.php
-
-sed -i "s/database_name_here/wordpress/" wp-config.php
-sed -i "s/username_here/admin/" wp-config.php
-sed -i "s/password_here/${var.db_password}/" wp-config.php
-sed -i "s/localhost/terraform-study-v2-db.cja0s8eogqdl.ap-northeast-1.rds.amazonaws.com/" wp-config.php
-
-chown -R apache:apache /var/www/html
-
-chmod -R 755 /var/www/html
-
-systemctl restart httpd
-EOF
+  user_data = ""
 
 }
 
