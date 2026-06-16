@@ -18,11 +18,6 @@ variable "subnet_ids" {
   type = list(string)
 }
 
-variable "instance_a_id" {
+variable "certificate_arn" {
   type = string
 }
-
-variable "instance_c_id" {
-  type = string
-} 
-

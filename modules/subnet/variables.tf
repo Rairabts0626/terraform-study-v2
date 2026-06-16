@@ -13,3 +13,7 @@ variable "az" {
 variable "subnet_name" {
   type = string
 }
+
+variable "public_ip" {
+  type = bool
+}
